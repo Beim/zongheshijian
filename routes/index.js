@@ -9,7 +9,13 @@ router.post('/post',
     async (ctx, next) => {
         const {username, password, data} = ctx.request.body;
         try {
-            let res = await db.query_escape(`select id from user where username = ? and password = ?`, 
+            // 判断用户是否存在
+            let res = await db.query_escape(`select * from user where username = ?`, [username]);
+            // 不存在则新建
+            if (res.length === 0) {
+                await db.query_escape(`insert into user (username, password) values (?, ?)`, [username, password]);
+            }
+            res = await db.query_escape(`select id from user where username = ? and password = ?`, 
                 [username, password]);
             if (res.length === 0) 
                 throw 'username or password error';
